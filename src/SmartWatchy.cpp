@@ -11,7 +11,7 @@ https://watchy.sqfmi.com
 
 #include <Watchy.h> //include the Watchy library
 #include "Teko_Regular12pt7b.h"
-#include "Teko_Regular50pt7b.h"
+#include "DSEG7_Classic_Bold_53.h"
 #include "icons.h"
 #include "settings.h"
 
@@ -34,7 +34,7 @@ class WatchFace : public Watchy { //inherit and extend Watchy class
 
       //drawbg
       display.fillScreen(light ? GxEPD_WHITE : GxEPD_BLACK);  
-      display.setFont(&Teko_Regular50pt7b);
+      display.setFont(&DSEG7_Classic_Bold_53);
       display.setTextColor(light ? GxEPD_BLACK : GxEPD_WHITE);
       display.setTextWrap(false);
 
