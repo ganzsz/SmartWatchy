@@ -51,8 +51,10 @@ class WatchFace : public Watchy { //inherit and extend Watchy class
       }
       textstring += currentTime.Minute;
       display.getTextBounds(textstring, 0, 0, &x1, &y1, &w, &h);
-      display.setCursor(100-w/2, 110);
+      display.setCursor(10, 110);
       display.print(textstring);
+
+      display.setFont(&Teko_Regular12pt7b);
 
       // draw battery
       display.fillRoundRect(16,16,34,12,4,light ? GxEPD_BLACK : GxEPD_WHITE);
@@ -60,11 +62,8 @@ class WatchFace : public Watchy { //inherit and extend Watchy class
       display.fillRoundRect(18,18,30,8,3,light ? GxEPD_WHITE : GxEPD_BLACK);
       float batt = (getBatteryVoltage()-3.3)/0.9;
       if (batt > 0) {
-       display.fillRoundRect(20,20,26*batt,4,2,light ? GxEPD_BLACK : GxEPD_WHITE);
+        display.fillRoundRect(20,20,26*batt,4,2,light ? GxEPD_BLACK : GxEPD_WHITE);
       }
-
-      // other info font
-      display.setFont(&Teko_Regular12pt7b);
       
       // batt percentage
       textstring = String(min(100, int(batt*100)));
