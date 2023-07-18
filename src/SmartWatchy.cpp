@@ -16,8 +16,30 @@ https://watchy.sqfmi.com
 #include "settings.h"
 
 class WatchFace : public Watchy { //inherit and extend Watchy class
-  using Watchy::Watchy;
   public:
+    const char* getMenuName(int index) {
+      if (index < 6) return Watchy::getMenuName(index);
+      const char* testMenuName = "Test menu";
+      return testMenuName;
+    }
+
+    WatchFace(const watchySettings &s) : Watchy(s) {
+      menuPages[6] = std::bind(&WatchFace::test, this);
+    }
+
+    void test() {
+      display.setFullWindow();
+      display.fillScreen(GxEPD_BLACK);
+      display.setFont(&FreeMonoBold9pt7b);
+      display.setTextColor(GxEPD_WHITE);
+      display.setCursor(0, 20);
+
+      display.println("Hoi test 1.0");
+      display.display(false); // full refresh
+
+      guiState = APP_STATE;
+    }
+
     void drawWatchFace() { //override this method to customize how the watch face looks
       
       int16_t  x1, y1;
