@@ -1,1 +1,1 @@
-Uses [Personal Watchy fork](https://github.com/ganzsz/WatchyFork)
+Uses [Personal Watchy fork](https://github.com/ganzsz/WatchyFork) version ^1.4.7-Ganzsz0.4
