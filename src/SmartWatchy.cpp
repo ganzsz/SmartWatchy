@@ -27,6 +27,7 @@ RTC_DATA_ATTR bool HourScreenReset;
 
 class SmartWatchy : public Watchy { //inherit and extend Watchy class
   public:
+    /* Override */
     const char* getMenuName(int index) {
       if (index < 6) return Watchy::getMenuName(index);
       const char* testMenuName = "Set Timer";
@@ -162,6 +163,7 @@ class SmartWatchy : public Watchy { //inherit and extend Watchy class
       showWatchFace(false);
     }
 
+    /* Override */
     void handleButtonPress() {
       // Only on the watch face
       if(guiState != WATCHFACE_STATE) { Watchy::handleButtonPress(); return; }
@@ -183,6 +185,11 @@ class SmartWatchy : public Watchy { //inherit and extend Watchy class
       //resets step counter at midnight everyday
       if(currentTime.Hour == 00 && currentTime.Minute == 00) {
         sensor.resetStepCounter();
+      }
+
+      // Set time every night
+      if (currentTime.Hour == 4 && currentTime.Minute == 00) {
+        updateTime();
       }
 
       // ** DRAW **
@@ -292,14 +299,12 @@ class SmartWatchy : public Watchy { //inherit and extend Watchy class
       }
 
       // Clear screen on the hour
-      if (currentTime.Minute == 0 && !HourScreenReset) {
-        HourScreenReset = 1;
+      if (currentTime.Minute == 0) {
         display.display(false);
-      } else if (currentTime.Minute == 1 && HourScreenReset) {
-        HourScreenReset = 0;
       }
     }
 
+    /* Override */
     void deepSleep() {
       // Only override if timer is running to make timer interrupt work
       if (timerState != TIMER_RUNNING) { Watchy::deepSleep(); return; }
