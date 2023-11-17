@@ -14,6 +14,7 @@ https://watchy.sqfmi.com
 #include "DSEG7_Classic_Bold_53.h"
 #include "icons.h"
 #include "settings.h"
+#include "secrets.h"
 
 RTC_DATA_ATTR time_t timerEndTime;
 RTC_DATA_ATTR tmElements_t timerDuration;
@@ -23,18 +24,22 @@ RTC_DATA_ATTR tmElements_t timerDuration;
 RTC_DATA_ATTR byte timerState = TIMER_OFF;
 #define TOGGLE_TIMER 2
 
-RTC_DATA_ATTR bool HourScreenReset;
+RTC_DATA_ATTR bool timeSynced            = false;
+
+#define OVERWRITTEN_MENU_NAMES 5
 
 class SmartWatchy : public Watchy { //inherit and extend Watchy class
   public:
     /* Override */
     const char* getMenuName(int index) {
-      if (index < 6) return Watchy::getMenuName(index);
-      const char* testMenuName = "Set Timer";
-      return testMenuName;
+      if (index < OVERWRITTEN_MENU_NAMES) return Watchy::getMenuName(index);
+
+      const char* overWriteMenuNames[] = {"Update time", "Set Timer" };
+      return overWriteMenuNames[index - OVERWRITTEN_MENU_NAMES];
     }
 
     SmartWatchy(const watchySettings &s) : Watchy(s) {
+      menuPages[5] = std::bind(&SmartWatchy::updateTime, this);
       menuPages[6] = std::bind(&SmartWatchy::setTimerMenu, this);
     }
 
@@ -176,6 +181,27 @@ class SmartWatchy : public Watchy { //inherit and extend Watchy class
       showWatchFace(true);
     }
 
+    /* Override */
+    bool connectWiFi() {
+      if (WL_CONNECT_FAILED ==
+          WiFi.begin(WIFI_CONNECT_SSID, WIFI_CONNECT_PASS)) { // Using hard coded credentials from secrets.h
+                          // with WiFi.begin(SSID,PASS);
+        WIFI_CONFIGURED = false;
+      } else {
+        if (WL_CONNECTED ==
+            WiFi.waitForConnectResult()) { // attempt to connect for 10s
+          WIFI_CONFIGURED = true;
+        } else { // connection failed, time out
+          WIFI_CONFIGURED = false;
+          // turn off radios
+          WiFi.mode(WIFI_OFF);
+          btStop();
+        }
+      }
+      return WIFI_CONFIGURED;
+    }
+
+    /* Override */
     void drawWatchFace() { //override this method to customize how the watch face looks
       int16_t  x1, y1;
       uint16_t w, h;
@@ -234,6 +260,14 @@ class SmartWatchy : public Watchy { //inherit and extend Watchy class
 //      textstring += " " + String(h);			// Debugging purpose							
       display.setCursor(55, 22+h/2);
       display.print(textstring);
+
+      // Time updated
+      display.drawBitmap(
+                200 - (26 + 10), 10, 
+                timeSynced ? wifiIcon : wifioffIcon,
+                26, 18,
+                light ? GxEPD_BLACK : GxEPD_WHITE
+              );
 
       auto now = makeTime(currentTime);
 
@@ -330,6 +364,17 @@ class SmartWatchy : public Watchy { //inherit and extend Watchy class
       esp_deep_sleep_start();
     }
 
+  private:
+    void updateTime() {
+      if(connectWiFi()) {
+        if (syncNTP()) {
+          if(!timeSynced) timeSynced = true;
+        } else {
+          if(timeSynced) timeSynced = false;
+        }
+        WiFi.mode(WIFI_OFF);
+      }
+    }
 };
 
 
